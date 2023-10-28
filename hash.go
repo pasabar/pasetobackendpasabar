@@ -22,7 +22,7 @@ func TokenEncoder(username, privatekey string) string {
 		resp.Message = "Gagal Encode" + err.Error()
 	} else {
 		resp.Token = encode
-		resp.Message = "Welcome aladagay tuthesky"
+		resp.Message = "Welcome to pasabar"
 	}
 
 	return ReturnStringStruct(resp)
