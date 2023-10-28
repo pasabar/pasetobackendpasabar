@@ -20,7 +20,7 @@ func TestGenerateKeyPASETO(t *testing.T) {
 }
 
 func TestHashPass(t *testing.T) {
-	password := "lodons"
+	password := "pasabarcoba"
 
 	Hashedpass, err := HashPass(password)
 	fmt.Println("error : ", err)
@@ -31,7 +31,7 @@ func TestHashFunc(t *testing.T) {
 	conn := MongoCreateConnection("MONGOSTRING", "pasabar3")
 	userdata := new(User)
 	userdata.Username = "pasabar"
-	userdata.Password = "lodon"
+	userdata.Password = "pasabarcoba"
 
 	data := GetOneUser(conn, "user", User{
 		Username: userdata.Username,
@@ -50,7 +50,7 @@ func TestTokenEncoder(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
 	userdata := new(User)
 	userdata.Username = "pasabar"
-	userdata.Password = "lodon"
+	userdata.Password = "pasabarcoba"
 
 	data := GetOneUser(conn, "user", User{
 		Username: userdata.Username,
