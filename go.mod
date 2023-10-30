@@ -3,7 +3,6 @@ module github.com/pasabar/pasetobackendpasabar
 go 1.20
 
 require (
-	aidanwoods.dev/go-paseto v1.5.0
 	github.com/aiteung/atdb v0.1.1
 	github.com/whatsauth/watoken v0.1.3
 	go.mongodb.org/mongo-driver v1.12.1
@@ -11,6 +10,7 @@ require (
 )
 
 require (
+	aidanwoods.dev/go-paseto v1.5.0 // indirect
 	aidanwoods.dev/go-result v0.1.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
