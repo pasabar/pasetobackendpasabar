@@ -12,6 +12,31 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// func InsertUserdata(MongoConn *mongo.Database, username, role, password string) (InsertedID interface{}) {
+// 	req := new(User)
+// 	req.Username = username
+// 	req.Password = password
+// 	req.Role = role
+// 	return InsertOneDoc(MongoConn, "user", req)
+// }
+
+// func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (insertedID interface{}) {
+// 	insertResult, err := db.Collection(collection).InsertOne(context.TODO(), doc)
+// 	if err != nil {
+// 		fmt.Printf("InsertOneDoc: %v\n", err)
+// 	}
+// 	return insertResult.InsertedID
+// }
+
+func GetConnectionMongo(MongoString, dbname string) *mongo.Database {
+	MongoInfo := atdb.DBInfo{
+		DBString: os.Getenv(MongoString),
+		DBName:   dbname,
+	}
+	conn := atdb.MongoConnect(MongoInfo)
+	return conn
+}
+
 func SetConnection(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
 	var DBmongoinfo = atdb.DBInfo{
 		DBString: os.Getenv(MONGOCONNSTRINGENV),
