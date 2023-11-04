@@ -2,7 +2,6 @@ package pasetobackendpasabar
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
@@ -11,22 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// func InsertUserdata(MongoConn *mongo.Database, username, role, password string) (InsertedID interface{}) {
-// 	req := new(User)
-// 	req.Username = username
-// 	req.Password = password
-// 	req.Role = role
-// 	return InsertOneDoc(MongoConn, "user", req)
-// }
-
-// func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (insertedID interface{}) {
-// 	insertResult, err := db.Collection(collection).InsertOne(context.TODO(), doc)
-// 	if err != nil {
-// 		fmt.Printf("InsertOneDoc: %v\n", err)
-// 	}
-// 	return insertResult.InsertedID
-// }
 
 func GetConnectionMongo(MongoString, dbname string) *mongo.Database {
 	MongoInfo := atdb.DBInfo{
@@ -44,6 +27,7 @@ func SetConnection(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
 	}
 	return atdb.MongoConnect(DBmongoinfo)
 }
+
 func CreateUser(mongoconn *mongo.Database, collection string, userdata User) interface{} {
 	// Hash the password before storing it
 	hashedPassword, err := HashPassword(userdata.Password)
@@ -87,6 +71,7 @@ func CreateNewUserRole(mongoconn *mongo.Database, collection string, userdata Us
 	// Insert the user data into the database
 	return atdb.InsertOneDoc(mongoconn, collection, userdata)
 }
+
 func CreateUserAndAddedToeken(PASETOPRIVATEKEYENV string, mongoconn *mongo.Database, collection string, userdata User) interface{} {
 	// Hash the password before storing it
 	hashedPassword, err := HashPassword(userdata.Password)
@@ -113,18 +98,13 @@ func DeleteUser(mongoconn *mongo.Database, collection string, userdata User) int
 	filter := bson.M{"username": userdata.Username}
 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
 }
+
 func ReplaceOneDoc(mongoconn *mongo.Database, collection string, filter bson.M, userdata User) interface{} {
 	return atdb.ReplaceOneDoc(mongoconn, collection, filter, userdata)
 }
+
 func FindUser(mongoconn *mongo.Database, collection string, userdata User) User {
 	filter := bson.M{"username": userdata.Username}
-	return atdb.GetOneDoc[User](mongoconn, collection, filter)
-}
-
-func FindUserUser(mongoconn *mongo.Database, collection string, userdata User) User {
-	filter := bson.M{
-		"username": userdata.Username,
-	}
 	return atdb.GetOneDoc[User](mongoconn, collection, filter)
 }
 
@@ -159,57 +139,73 @@ func CreateUserAndAddToken(privateKeyEnv string, mongoconn *mongo.Database, coll
 	return nil
 }
 
-func AuthenticateUserAndGenerateToken(privateKeyEnv string, mongoconn *mongo.Database, collection string, userdata User) (string, error) {
-	// Cari pengguna berdasarkan nama pengguna
-	username := userdata.Username
-	password := userdata.Password
-	userdata, err := FindUserByUsername(mongoconn, collection, username)
-	if err != nil {
-		return "", err
-	}
-
-	// Memeriksa kata sandi
-	if !CheckPasswordHash(password, userdata.Password) {
-		return "", errors.New("Password salah") // Gantilah pesan kesalahan sesuai kebutuhan Anda
-	}
-
-	// Generate token untuk otentikasi
-	tokenstring, err := watoken.Encode(username, os.Getenv(privateKeyEnv))
-	if err != nil {
-		return "", err
-	}
-
-	return tokenstring, nil
+func InsertUserdata(MongoConn *mongo.Database, username, role, password string) (InsertedID interface{}) {
+	req := new(User)
+	req.Username = username
+	req.Password = password
+	req.Role = role
+	return InsertOneDoc(MongoConn, "user", req)
 }
 
-func FindUserByUsername(mongoconn *mongo.Database, collection string, username string) (User, error) {
-	var user User
-	filter := bson.M{"username": username}
-	err := mongoconn.Collection(collection).FindOne(context.TODO(), filter).Decode(&user)
+func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (insertedID interface{}) {
+	insertResult, err := db.Collection(collection).InsertOne(context.TODO(), doc)
 	if err != nil {
-		return User{}, err
+		fmt.Printf("InsertOneDoc: %v\n", err)
 	}
-	return user, nil
+	return insertResult.InsertedID
 }
 
-// create login using Private
-func CreateLogin(mongoconn *mongo.Database, collection string, userdata User) interface{} {
-	// Hash the password before storing it
-	hashedPassword, err := HashPassword(userdata.Password)
-	if err != nil {
-		return err
-	}
-	userdata.Password = hashedPassword
-	// Create a token for the user
-	tokenstring, err := watoken.Encode(userdata.Username, userdata.Private)
-	if err != nil {
-		return err
-	}
-	userdata.Token = tokenstring
+// func AuthenticateUserAndGenerateToken(privateKeyEnv string, mongoconn *mongo.Database, collection string, userdata User) (string, error) {
+// 	// Cari pengguna berdasarkan nama pengguna
+// 	username := userdata.Username
+// 	password := userdata.Password
+// 	userdata, err := FindUserByUsername(mongoconn, collection, username)
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	// Insert the user data into the database
-	return atdb.InsertOneDoc(mongoconn, collection, userdata)
-}
+// 	// Memeriksa kata sandi
+// 	if !CheckPasswordHash(password, userdata.Password) {
+// 		return "", errors.New("Password salah") // Gantilah pesan kesalahan sesuai kebutuhan Anda
+// 	}
+
+// 	// Generate token untuk otentikasi
+// 	tokenstring, err := watoken.Encode(username, os.Getenv(privateKeyEnv))
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	return tokenstring, nil
+// }
+
+// func FindUserByUsername(mongoconn *mongo.Database, collection string, username string) (User, error) {
+// 	var user User
+// 	filter := bson.M{"username": username}
+// 	err := mongoconn.Collection(collection).FindOne(context.TODO(), filter).Decode(&user)
+// 	if err != nil {
+// 		return User{}, err
+// 	}
+// 	return user, nil
+// }
+
+// // create login using Private
+// func CreateLogin(mongoconn *mongo.Database, collection string, userdata User) interface{} {
+// 	// Hash the password before storing it
+// 	hashedPassword, err := HashPassword(userdata.Password)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	userdata.Password = hashedPassword
+// 	// Create a token for the user
+// 	tokenstring, err := watoken.Encode(userdata.Username, userdata.Private)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	userdata.Token = tokenstring
+
+// 	// Insert the user data into the database
+// 	return atdb.InsertOneDoc(mongoconn, collection, userdata)
+// }
 
 // func MongoCreateConnection(MongoString, dbname string) *mongo.Database {
 // 	MongoInfo := atdb.DBInfo{

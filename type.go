@@ -22,11 +22,6 @@ type Response struct {
 	Data    interface{} `json:"data" bson:"data"`
 }
 
-type Credents struct {
-	Status  string `json:"status" bson:"status"`
-	Message string `json:"message" bson:"message"`
-}
-
 type RegisterStruct struct {
 	Username string `json:"username" bson:"username"`
 	Password string `json:"password" bson:"password"`

@@ -36,7 +36,7 @@ func GCFFindUserByName(MONGOCONNSTRINGENV, dbname, collectionname string, r *htt
 	}
 
 	// Jika ada username, mencari data pengguna
-	user := FindUserUser(mconn, collectionname, datauser)
+	user := FindUser(mconn, collectionname, datauser)
 
 	// Jika data pengguna ditemukan, mengembalikan data pengguna dalam format yang sesuai
 	if user != (User{}) {
@@ -69,55 +69,6 @@ func GCFUpdateHandler(MONGOCONNSTRINGENV, dbname, collectionname string, r *http
 	return GCFReturnStruct(datauser)
 }
 
-// add encrypt password to database and tokenstring
-// func GCFCreateHandler(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-
-// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-// 	var datauser User
-// 	err := json.NewDecoder(r.Body).Decode(&datauser)
-// 	if err != nil {
-// 		return err.Error()
-// 	}
-// 	CreateNewUserRole(mconn, collectionname, datauser)
-// 	return GCFReturnStruct(datauser)
-// }
-
-func GCFCreateHandlerTokenPaseto(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var datauser User
-	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		return err.Error()
-	}
-	hashedPassword, hashErr := HashPassword(datauser.Password)
-	if hashErr != nil {
-		return hashErr.Error()
-	}
-	datauser.Password = hashedPassword
-	CreateNewUserRole(mconn, collectionname, datauser)
-	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
-	if err != nil {
-		return err.Error()
-	}
-	datauser.Token = tokenstring
-	return GCFReturnStruct(datauser)
-}
-
-func GCFCreateAccountAndToken(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var datauser User
-	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		return err.Error()
-	}
-	hashedPassword, hashErr := HashPassword(datauser.Password)
-	if hashErr != nil {
-		return hashErr.Error()
-	}
-	datauser.Password = hashedPassword
-	CreateUserAndAddedToeken(PASETOPRIVATEKEYENV, mconn, collectionname, datauser)
-	return GCFReturnStruct(datauser)
-}
 func GCFCreateHandler(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 	var datauser User
@@ -138,6 +89,7 @@ func GCFCreateHandler(MONGOCONNSTRINGENV, dbname, collectionname string, r *http
 
 	return GCFReturnStruct(datauser)
 }
+
 func GFCPostHandlerUser(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response Credential
 	Response.Status = false
@@ -216,149 +168,248 @@ func GCFLoginTest(username, password, MONGOCONNSTRINGENV, dbname, collectionname
 	return CheckPasswordHash(password, res.Password)
 }
 
-func GCFCreateTokenAndSaveToDB(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) (string, error) {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-
-	// Inisialisasi variabel datauser
+func Login(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string {
+	var resp Credential
+	mconn := SetConnection(MongoEnv, dbname)
 	var datauser User
-
-	// Membaca data JSON dari permintaan HTTP ke dalam datauser
-	if err := json.NewDecoder(r.Body).Decode(&datauser); err != nil {
-		return "", err // Mengembalikan kesalahan langsung
-	}
-
-	// Generate a token for the user
-	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
+	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		return "", err // Mengembalikan kesalahan langsung
-	}
-	datauser.Token = tokenstring
-
-	// Simpan pengguna ke dalam basis data
-	if err := atdb.InsertOneDoc(mconn, collectionname, datauser); err != nil {
-		return tokenstring, nil // Mengembalikan kesalahan langsung
-	}
-
-	return tokenstring, nil // Mengembalikan token dan nil untuk kesalahan jika sukses
-}
-func GCFCreteRegister(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
-	err := json.NewDecoder(r.Body).Decode(&userdata)
-	if err != nil {
-		return err.Error()
-	}
-	CreateUser(mconn, collectionname, userdata)
-	return GCFReturnStruct(userdata)
-}
-
-func GCFLoginAfterCreate(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
-	err := json.NewDecoder(r.Body).Decode(&userdata)
-	if err != nil {
-		return err.Error()
-	}
-	if IsPasswordValid(mconn, collectionname, userdata) {
-		tokenstring, err := watoken.Encode(userdata.Username, os.Getenv("PASETOPRIVATEKEYENV"))
-		if err != nil {
-			return err.Error()
+		resp.Message = "error parsing application/json: " + err.Error()
+	} else {
+		if IsPasswordValid(mconn, Colname, datauser) {
+			tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(Privatekey))
+			if err != nil {
+				resp.Message = "Gagal Encode Token : " + err.Error()
+			} else {
+				resp.Status = true
+				resp.Message = "Selamat Datang"
+				resp.Token = tokenstring
+			}
+		} else {
+			resp.Message = "Password Salah"
 		}
-		userdata.Token = tokenstring
-		return GCFReturnStruct(userdata)
-	} else {
-		return "Password Salah"
 	}
+	return GCFReturnStruct(resp)
 }
 
-func GCFLoginAfterCreater(MONGOCONNSTRINGENV, dbname, collectionname, privateKeyEnv string, r *http.Request) (string, error) {
-	// Ambil data pengguna dari request, misalnya dari body JSON atau form data.
-	var userdata User
-	// Implement the logic to extract user data from the request (r) here.
-
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-
-	// Lakukan otentikasi pengguna yang baru saja dibuat.
-	token, err := AuthenticateUserAndGenerateToken(privateKeyEnv, mconn, collectionname, userdata)
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+func ReturnStringStruct(Data any) string {
+	jsonee, _ := json.Marshal(Data)
+	return string(jsonee)
 }
 
-func GCFLoginAfterCreatee(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
+func Register(Mongoenv, dbname string, r *http.Request) string {
+	resp := new(Credential)
+	userdata := new(User)
+	resp.Status = false
+	conn := GetConnectionMongo(Mongoenv, dbname)
 	err := json.NewDecoder(r.Body).Decode(&userdata)
 	if err != nil {
-		return err.Error()
-	}
-	if IsPasswordValid(mconn, collectionname, userdata) {
-		// Password is valid, return a success message or some other response.
-		return "Login successful"
-
+		resp.Message = "error parsing application/json: " + err.Error()
 	} else {
-		// Password is not valid, return an error message.
-		return "Password Salah"
+		resp.Status = true
+		hash, err := HashPassword(userdata.Password)
+		if err != nil {
+			resp.Message = "Gagal Hash Password" + err.Error()
+		}
+		InsertUserdata(conn, userdata.Username, userdata.Role, hash)
+		resp.Message = "Berhasil Input data"
 	}
+	response := ReturnStringStruct(resp)
+	return response
 }
 
-func GCFLoginAfterCreateee(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
-	err := json.NewDecoder(r.Body).Decode(&userdata)
-	if err != nil {
-		return err.Error()
-	}
-	if IsPasswordValid(mconn, collectionname, userdata) {
-		// Password is valid, construct and return the GCFReturnStruct.
-		response := CreateResponse(true, "Berhasil Login", userdata)
-		return GCFReturnStruct(response) // Return GCFReturnStruct directly
-	} else {
-		// Password is not valid, return an error message.
-		return "Password Salah"
-	}
-}
-func GCFLoginAfterCreateeee(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
-	err := json.NewDecoder(r.Body).Decode(&userdata)
-	if err != nil {
-		return err.Error()
-	}
-	if IsPasswordValid(mconn, collectionname, userdata) {
-		// Password is valid, return a success message or some other response.
-		return GCFReturnStruct(userdata)
-	} else {
-		// Password is not valid, return an error message.
-		return "Password Salah"
-	}
-}
+// add encrypt password to database and tokenstring
+// func GCFCreateHandler(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 
-// func ReturnStringStruct(Data any) string {
-// 	jsonee, _ := json.Marshal(Data)
-// 	return string(jsonee)
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// 	var datauser User
+// 	err := json.NewDecoder(r.Body).Decode(&datauser)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+// 	CreateNewUserRole(mconn, collectionname, datauser)
+// 	return GCFReturnStruct(datauser)
 // }
 
-// func Register(Mongoenv, dbname string, r *http.Request) string {
-// 	resp := new(Credential)
-// 	userdata := new(RegisterStruct)
-// 	resp.Status = false
-// 	conn := GetConnectionMongo(Mongoenv, dbname)
+// func GCFCreateHandlerTokenPaseto(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// 	var datauser User
+// 	err := json.NewDecoder(r.Body).Decode(&datauser)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+// 	hashedPassword, hashErr := HashPassword(datauser.Password)
+// 	if hashErr != nil {
+// 		return hashErr.Error()
+// 	}
+// 	datauser.Password = hashedPassword
+// 	CreateNewUserRole(mconn, collectionname, datauser)
+// 	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+// 	datauser.Token = tokenstring
+// 	return GCFReturnStruct(datauser)
+// }
+
+// func GCFCreateAccountAndToken(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// 	var datauser User
+// 	err := json.NewDecoder(r.Body).Decode(&datauser)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+// 	hashedPassword, hashErr := HashPassword(datauser.Password)
+// 	if hashErr != nil {
+// 		return hashErr.Error()
+// 	}
+// 	datauser.Password = hashedPassword
+// 	CreateUserAndAddedToeken(PASETOPRIVATEKEYENV, mconn, collectionname, datauser)
+// 	return GCFReturnStruct(datauser)
+// }
+
+// func GCFCreateRegister(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// 	var userdata User
 // 	err := json.NewDecoder(r.Body).Decode(&userdata)
 // 	if err != nil {
-// 		resp.Message = "error parsing application/json: " + err.Error()
-// 	} else {
-// 		resp.Status = true
-// 		hash, err := HashPass(userdata.Password)
-// 		if err != nil {
-// 			resp.Message = "Gagal Hash Password" + err.Error()
-// 		}
-// 		InsertUserdata(conn, userdata.Username, hash)
-// 		resp.Message = "Berhasil Input data"
+// 		return err.Error()
 // 	}
-// 	response := pasproj.ReturnStringStruct(resp)
-// 	return response
+// 	CreateUser(mconn, collectionname, userdata)
+// 	return GCFReturnStruct(userdata)
+// }
+
+// func GCFCreateTokenAndSaveToDB(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) (string, error) {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+// 	// Inisialisasi variabel datauser
+// 	var datauser User
+
+// 	// Membaca data JSON dari permintaan HTTP ke dalam datauser
+// 	if err := json.NewDecoder(r.Body).Decode(&datauser); err != nil {
+// 		return "", err // Mengembalikan kesalahan langsung
+// 	}
+
+// 	// Generate a token for the user
+// 	tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(PASETOPRIVATEKEYENV))
+// 	if err != nil {
+// 		return "", err // Mengembalikan kesalahan langsung
+// 	}
+// 	datauser.Token = tokenstring
+
+// 	// Simpan pengguna ke dalam basis data
+// 	if err := atdb.InsertOneDoc(mconn, collectionname, datauser); err != nil {
+// 		return tokenstring, nil // Mengembalikan kesalahan langsung
+// 	}
+
+// 	return tokenstring, nil // Mengembalikan token dan nil untuk kesalahan jika sukses
+// }
+
+// func GCFLoginAfterCreate(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// 	var userdata User
+// 	err := json.NewDecoder(r.Body).Decode(&userdata)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+// 	if IsPasswordValid(mconn, collectionname, userdata) {
+// 		tokenstring, err := watoken.Encode(userdata.Username, os.Getenv("PASETOPRIVATEKEYENV"))
+// 		if err != nil {
+// 			return err.Error()
+// 		}
+// 		userdata.Token = tokenstring
+// 		return GCFReturnStruct(userdata)
+// 	} else {
+// 		return "Password Salah"
+// 	}
+// }
+
+// func GCFLoginAfterCreater(MONGOCONNSTRINGENV, dbname, collectionname, privateKeyEnv string, r *http.Request) (string, error) {
+// 	// Ambil data pengguna dari request, misalnya dari body JSON atau form data.
+// 	var userdata User
+// 	// Implement the logic to extract user data from the request (r) here.
+
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+// 	// Lakukan otentikasi pengguna yang baru saja dibuat.
+// 	token, err := AuthenticateUserAndGenerateToken(privateKeyEnv, mconn, collectionname, userdata)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return token, nil
+// }
+
+// func GCFLoginAfterCreatee(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// 	var userdata User
+// 	err := json.NewDecoder(r.Body).Decode(&userdata)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+// 	if IsPasswordValid(mconn, collectionname, userdata) {
+// 		// Password is valid, return a success message or some other response.
+// 		return "Login successful"
+
+// 	} else {
+// 		// Password is not valid, return an error message.
+// 		return "Password Salah"
+// 	}
+// }
+
+// func GCFLoginAfterCreateee(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// 	var userdata User
+// 	err := json.NewDecoder(r.Body).Decode(&userdata)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+// 	if IsPasswordValid(mconn, collectionname, userdata) {
+// 		// Password is valid, construct and return the GCFReturnStruct.
+// 		response := CreateResponse(true, "Berhasil Login", userdata)
+// 		return GCFReturnStruct(response) // Return GCFReturnStruct directly
+// 	} else {
+// 		// Password is not valid, return an error message.
+// 		return "Password Salah"
+// 	}
+// }
+// func GCFLoginAfterCreateeee(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// 	var userdata User
+// 	err := json.NewDecoder(r.Body).Decode(&userdata)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+// 	if IsPasswordValid(mconn, collectionname, userdata) {
+// 		// Password is valid, return a success message or some other response.
+// 		return GCFReturnStruct(userdata)
+// 	} else {
+// 		// Password is not valid, return an error message.
+// 		return "Password Salah"
+// 	}
+// }
+
+// func GCFLoginFixx(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// 	var userdata User
+// 	err := json.NewDecoder(r.Body).Decode(&userdata)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+
+// 	if IsPasswordValid(mconn, collectionname, userdata) {
+// 		// Password is valid, construct and return the GCFReturnStruct.
+// 		userMap := map[string]interface{}{
+// 			"Username": userdata.Username,
+// 			"Password": userdata.Password,
+// 			"Private":  userdata.Private,
+// 			"Publick":  userdata.Public,
+// 		}
+// 		response := CreateResponse(true, "Berhasil Login", userMap)
+// 		return GCFReturnStruct(response) // Return GCFReturnStruct directly
+// 	} else {
+// 		// Password is not valid, return an error message.
+// 		return "Password Salah"
+// 	}
 // }
 
 // func Login(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string {
