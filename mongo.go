@@ -155,6 +155,13 @@ func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (inser
 	return insertResult.InsertedID
 }
 
+func InsertUser(db *mongo.Database, collection string, userdata User) string {
+	hash, _ := HashPassword(userdata.Password)
+	userdata.Password = hash
+	atdb.InsertOneDoc(db, collection, userdata)
+	return "Username : " + userdata.Username + "\nPassword : " + userdata.Password
+}
+
 // func AuthenticateUserAndGenerateToken(privateKeyEnv string, mongoconn *mongo.Database, collection string, userdata User) (string, error) {
 // 	// Cari pengguna berdasarkan nama pengguna
 // 	username := userdata.Username
