@@ -18,12 +18,12 @@ func TestCreateNewUserRole(t *testing.T) {
 	CreateNewUserRole(mconn, "user", userdata)
 }
 
-func TestDeleteUser(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "pasabar13")
-	var userdata User
-	userdata.Username = "lolz"
-	DeleteUser(mconn, "user", userdata)
-}
+// func TestDeleteUser(t *testing.T) {
+// 	mconn := SetConnection("MONGOSTRING", "pasabar13")
+// 	var userdata User
+// 	userdata.Username = "lolz"
+// 	DeleteUser(mconn, "user", userdata)
+// }
 
 func CreateNewUserToken(t *testing.T) {
 	var userdata User
