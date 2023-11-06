@@ -75,7 +75,7 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestGetUserFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("")
+	id, _ := primitive.ObjectIDFromHex("6548c4a7b0a03450a264258c")
 	anu, _ := modul.GetUserFromID(mconn, "user", id)
 	fmt.Println(anu)
 }
