@@ -13,47 +13,76 @@ var mconn = SetConnection("MONGOSTRING", "pasabar13")
 
 // user
 func TestRegister(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "pasabar13")
-	var userdata User
-	userdata.Email = "pasabarsky@gmail.com"
-	userdata.Username = "pasabarsky"
-	userdata.Role = "admin"
-	userdata.Password = "lodonsky"
+	var data model.User
+	data.ID = primitive.NewObjectID()
+	data.Email = "pasabar13@gmail.com"
+	data.Username = "pasabar09123"
+	data.Role = "user"
+	data.Password = "secret"
 
-	nama := InsertUser(mconn, "user", userdata)
-	fmt.Println(nama)
+	err := modul.Register(mconn, "user", data)
+	if err != nil {
+		t.Errorf("Error registering user: %v", err)
+	} else {
+		fmt.Println("Register success", data)
+	}
 }
 
-// test login
-// func TestLogIn(t *testing.T) {
-// 	var userdata model.User
-// 	userdata.Username = "dapskuy"
-// 	userdata.Password = "kepoah"
-// 	user, status, err := modul.LogIn(mconn, "user", userdata)
-// 	fmt.Println("Status", status)
-// 	if err != nil {
-// 		t.Errorf("Error logging in user: %v", err)
-// 	} else {
-// 		fmt.Println("Login success", user)
-// 	}
-// }
+func TestLogIn(t *testing.T) {
+	var data model.User
+	data.Username = "iyas"
+	data.Password = "secret"
+
+	user, status, err := modul.LogIn(mconn, "user", data)
+	fmt.Println("Status", status)
+	if err != nil {
+		t.Errorf("Error logging in user: %v", err)
+	} else {
+		fmt.Println("Login success", user)
+	}
+}
 
 // test change password
 func TestChangePassword(t *testing.T) {
-	username := "ujang"
-	oldpassword := "ujang123"
-	newpassword := "ujanggeming"
+	var data model.User
+	data.Email = "iyas@gmail.com" // email tidak diubah
+	data.Username = "iyas"        // username tidak diubah
+	data.Role = "user"            // role tidak diubah
 
-	var userdata model.User
-	userdata.Username = username
-	userdata.Password = newpassword
+	data.Password = "ganteng"
 
-	userdata, status, err := modul.ChangePassword(mconn, "user", username, oldpassword, newpassword)
+	// username := "ryaaspo123"
+
+	_, status, err := modul.ChangePassword(mconn, "user", data)
 	fmt.Println("Status", status)
 	if err != nil {
-		t.Errorf("Error changing password: %v", err)
+		t.Errorf("Error updateting document: %v", err)
 	} else {
-		fmt.Println("Password change success for user", userdata)
+		fmt.Println("Password berhasil diubah dengan username:", data.Username)
+	}
+}
+
+func TestUpdateUser(t *testing.T) {
+	var data model.User
+	data.Email = "iyas@gmail.com"
+	data.Username = "iyas"
+	data.Role = "user"
+
+	data.Password = "secret" // password tidak diubah
+
+	id, err := primitive.ObjectIDFromHex("654a8d045fed94712c1f3a89")
+	data.ID = id
+	if err != nil {
+		fmt.Printf("Data tidak berhasil diubah")
+	} else {
+
+		_, status, err := modul.UpdateUser(mconn, "user", data)
+		fmt.Println("Status", status)
+		if err != nil {
+			t.Errorf("Error updateting document: %v", err)
+		} else {
+			fmt.Printf("Data berhasil diubah untuk id: %s\n", id)
+		}
 	}
 }
 
@@ -75,13 +104,13 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestGetUserFromID(t *testing.T) {
-	id, _ := primitive.ObjectIDFromHex("6548c4a7b0a03450a264258c")
+	id, _ := primitive.ObjectIDFromHex("654a8cd3884072873a89a682")
 	anu, _ := modul.GetUserFromID(mconn, "user", id)
 	fmt.Println(anu)
 }
 
 func TestGetUserFromUsername(t *testing.T) {
-	anu, err := modul.GetUserFromUsername(mconn, "user", "pasabarsky")
+	anu, err := modul.GetUserFromUsername(mconn, "user", "pasabar09123")
 	if err != nil {
 		t.Errorf("Error getting user: %v", err)
 		return
@@ -99,8 +128,9 @@ func TestGetAllUser(t *testing.T) {
 func TestInsertCatalog(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "pasabar13")
 	var catalogdata model.Catalog
-	catalogdata.Catalog = "Tasik"
-	catalogdata.Description = "Ada iqbal disana jadi mengmusa"
+	catalogdata.Title = "Pangandaran"
+	catalogdata.Description = "sangat indah banget"
+	catalogdata.Image = "https://media.suara.com/pictures/653x366/2022/04/30/75648-taman-langit-pangalengan.webp"
 	catalogdata.IsDone = true
 
 	nama, err := modul.InsertCatalog(mconn, "catalog", catalogdata)
@@ -112,12 +142,12 @@ func TestInsertCatalog(t *testing.T) {
 
 func TestGetCatalogFromID(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "pasabar13")
-	id, _ := primitive.ObjectIDFromHex("6548c4a7b0a03450a264258c")
+	id, _ := primitive.ObjectIDFromHex("654a8f229fb816979403be96")
 	anu := modul.GetCatalogFromID(mconn, "catalog", id)
 	fmt.Println(anu)
 }
 
 func TestGetCatalogList(t *testing.T) {
-	anu := modul.GetCatalogList(mconn, "user")
+	anu := modul.GetCatalogList(mconn, "catalog")
 	fmt.Println(anu)
 }
