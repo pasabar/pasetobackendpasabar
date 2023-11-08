@@ -18,8 +18,9 @@ type Credential struct {
 
 type Catalog struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Catalog     string             `bson:"title,omitempty" json:"title,omitempty"`
+	Title       string             `bson:"title,omitempty" json:"title,omitempty"`
 	Description string             `bson:"description,omitempty" json:"description,omitempty"`
+	Image       string             `json:"image" bson:"image"`
 	IsDone      bool               `bson:"isdone,omitempty" json:"isdone,omitempty"`
 }
 
