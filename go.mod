@@ -3,7 +3,7 @@ module github.com/pasabar/pasetobackendpasabar
 go 1.20
 
 require (
-	github.com/aiteung/atdb v0.1.1
+	github.com/aiteung/atdb v0.1.3
 	github.com/badoux/checkmail v1.2.1
 	github.com/whatsauth/watoken v0.1.3
 	go.mongodb.org/mongo-driver v1.12.1
