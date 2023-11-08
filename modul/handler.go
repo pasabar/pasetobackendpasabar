@@ -71,6 +71,26 @@ func GCFHandlerLogIn(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collection
 	return GCFReturnStruct(Response)
 }
 
+func GCFHandlerUpdateUser(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response model.Credential
+	Response.Status = false
+	mconn := MongoConnect(MONGOCONNSTRINGENV, dbname)
+	var datauser model.User
+	err := json.NewDecoder(r.Body).Decode(&datauser)
+	if err != nil {
+		Response.Message = "Bad Request: error parsing application/json: " + err.Error()
+	}
+	user, status, err := UpdateUser(mconn, collectionname, datauser)
+	if err != nil {
+		Response.Message = err.Error()
+		return GCFReturnStruct(Response)
+	}
+	Response.Status = true
+	Response.Message = "Update success " + user.Username + " " + strconv.FormatBool(status)
+
+	return GCFReturnStruct(Response)
+}
+
 func GCFHandlerChangePassword(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response model.Credential
 	Response.Status = false
@@ -80,13 +100,13 @@ func GCFHandlerChangePassword(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, c
 	if err != nil {
 		Response.Message = "error parsing application/json: " + err.Error()
 	}
-	userdata, status, err := ChangePassword(mconn, collectionname, datauser.Username, datauser.Password, datauser.Password)
+	user, status, err := ChangePassword(mconn, collectionname, datauser)
 	if err != nil {
 		Response.Message = err.Error()
 		return GCFReturnStruct(Response)
 	}
 	Response.Status = true
-	Response.Message = "Password change success for user" + userdata.Username + strconv.FormatBool(status)
+	Response.Message = "Password change success for user" + user.Username + strconv.FormatBool(status)
 
 	return GCFReturnStruct(Response)
 }
