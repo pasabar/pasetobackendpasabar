@@ -139,3 +139,34 @@ func InsertUser(db *mongo.Database, collection string, userdata User) string {
 	atdb.InsertOneDoc(db, collection, userdata)
 	return "Username : " + userdata.Username + "\nPassword : " + userdata.Password
 }
+
+// catalog function
+func CreateCatalog(mongoconn *mongo.Database, collection string, catalogdata Catalog) interface{} {
+	return atdb.InsertOneDoc(mongoconn, collection, catalogdata)
+}
+
+func DeleteCatalog(mongoconn *mongo.Database, collection string, catalogdata Catalog) interface{} {
+	filter := bson.M{"nomorid": catalogdata.Nomorid}
+	return atdb.DeleteOneDoc(mongoconn, collection, filter)
+}
+
+func UpdatedCatalog(mongoconn *mongo.Database, collection string, filter bson.M, catalogdata Catalog) interface{} {
+	filter = bson.M{"nomorid": catalogdata.Nomorid}
+	return atdb.ReplaceOneDoc(mongoconn, collection, filter, catalogdata)
+}
+
+func GetAllCatalog(mongoconn *mongo.Database, collection string) []Catalog {
+	catalog := atdb.GetAllDoc[[]Catalog](mongoconn, collection)
+	return catalog
+}
+
+func GetAllCatalogID(mongoconn *mongo.Database, collection string, catalogdata Catalog) Catalog {
+	filter := bson.M{
+		"nomorid":     catalogdata.Nomorid,
+		"title":       catalogdata.Title,
+		"description": catalogdata.Description,
+		"image":       catalogdata.Image,
+	}
+	catalogID := atdb.GetOneDoc[Catalog](mongoconn, collection, filter)
+	return catalogID
+}
