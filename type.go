@@ -1,5 +1,9 @@
 package pasetobackendpasabar
 
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
 type User struct {
 	Username string `json:"username" bson:"username"`
 	Password string `json:"password" bson:"password"`
@@ -20,4 +24,13 @@ type Response struct {
 	Status  bool        `json:"status" bson:"status"`
 	Message string      `json:"message" bson:"message"`
 	Data    interface{} `json:"data" bson:"data"`
+}
+
+type Topik struct {
+	ID          primitive.ObjectID `bson:"_id,omitempty" `
+	Nomorid     int                `json:"nomorid" bson:"nomorid"`
+	Title       string             `json:"title" bson:"title"`
+	Description string             `json:"description" bson:"description"`
+	Image       string             `json:"image" bson:"image"`
+	Status      bool               `json:"status" bson:"status"`
 }
