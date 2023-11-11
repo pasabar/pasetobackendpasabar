@@ -140,6 +140,11 @@ func InsertUser(db *mongo.Database, collection string, userdata User) string {
 	return "Username : " + userdata.Username + "\nPassword : " + userdata.Password
 }
 
+// catalog
+func CreateNewCatalog(mongoconn *mongo.Database, collection string, catalogdata Catalog) interface{} {
+	return atdb.InsertOneDoc(mongoconn, collection, catalogdata)
+}
+
 // catalog function
 func CreateCatalog(mongoconn *mongo.Database, collection string, catalogdata Catalog) interface{} {
 	return atdb.InsertOneDoc(mongoconn, collection, catalogdata)
