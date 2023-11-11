@@ -26,7 +26,7 @@ type Response struct {
 	Data    interface{} `json:"data" bson:"data"`
 }
 
-type Topik struct {
+type Catalog struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" `
 	Nomorid     int                `json:"nomorid" bson:"nomorid"`
 	Title       string             `json:"title" bson:"title"`
