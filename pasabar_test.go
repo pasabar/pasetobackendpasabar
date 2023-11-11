@@ -102,3 +102,19 @@ func TestUserFix(t *testing.T) {
 	userdata.Role = "admin"
 	CreateUser(mconn, "user", userdata)
 }
+
+func TestCatalog(t *testing.T) {
+	mconn := SetConnection("MONGOSTRING", "pasabar13")
+	var catalogdata Catalog
+	catalogdata.Nomorid = 1
+	catalogdata.Title = "garuts"
+	catalogdata.Description = "membahana"
+	catalogdata.Image = "https://images3.alphacoders.com/165/thumb-1920-165265.jpg"
+	CreateNewCatalog(mconn, "catalog", catalogdata)
+}
+
+func TestAllCatalog(t *testing.T) {
+	mconn := SetConnection("MONGOSTRING", "pasabar13")
+	catalog := GetAllCatalog(mconn, "catalog")
+	fmt.Println(catalog)
+}
