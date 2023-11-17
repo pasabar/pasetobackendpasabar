@@ -281,7 +281,7 @@ func GCFGetAllCatalog(MONGOCONNSTRINGENV, dbname, collectionname string) string 
 }
 
 // get all catalog by id
-func GCFGetAllCatalogtID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFGetAllCatalogID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
 	var datacatalog Catalog
