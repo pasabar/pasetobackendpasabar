@@ -42,3 +42,16 @@ type About struct {
 	Image       string `json:"image" bson:"image"`
 	Status      bool   `json:"status" bson:"status"`
 }
+
+type Tour struct {
+	ID          int       `json:"id" bson:"id"`
+	Title       string    `json:"title" bson:"title"`
+	Description string    `json:"description" bson:"description"`
+	Cari        string    `json:"cari" bson:"cari"`
+	Tanggal     string    `json:"tanggal" bson:"tanggal"`
+	Image       string    `json:"image" bson:"image"`
+	Harga       int       `json:"harga" bson:"harga"`
+	Catalog     []Catalog `json:"catalog" bson:"catalog"`
+	Rating      string    `json:"rating" bson:"rating"`
+	Status      bool      `json:"status" bson:"status"`
+}
