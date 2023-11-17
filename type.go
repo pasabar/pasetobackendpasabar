@@ -68,3 +68,15 @@ type HotelResto struct {
 	Rating      string    `json:"rating" bson:"rating"`
 	Status      bool      `json:"status" bson:"status"`
 }
+
+type Contact struct {
+	ID      int    `json:"id" bson:"id"`
+	Name    string `json:"title" bson:"title"`
+	Subject string `json:"description" bson:"description"`
+	Alamat  string `json:"alamat" bson:"alamat"`
+	Website string `json:"website" bson:"website"`
+	Message string `json:"image" bson:"image"`
+	Email   string `json:"email" bson:"email"`
+	Phone   string `json:"phone" bson:"phone"`
+	Status  bool   `json:"status" bson:"status"`
+}
