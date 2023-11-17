@@ -367,3 +367,81 @@ func GCFGetAllHotelRestoID(MONGOCONNSTRINGENV, dbname, collectionname string, r 
 		return GCFReturnStruct(CreateResponse(false, "Failed Get All HotelResto", hotelresto))
 	}
 }
+
+// <--- ini contact --->
+
+// contact post
+func GCFCreateContact(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var datacontact Contact
+	err := json.NewDecoder(r.Body).Decode(&datacontact)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := CreateContact(mconn, collectionname, datacontact); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Create Contact", datacontact))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Create Contact", datacontact))
+	}
+}
+
+// delete contact
+func GCFDeleteContact(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var datacontact Contact
+	err := json.NewDecoder(r.Body).Decode(&datacontact)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := DeleteContact(mconn, collectionname, datacontact); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Delete Contact", datacontact))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Delete Contact", datacontact))
+	}
+}
+
+// update contact
+func GCFUpdateContact(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var datacontact Contact
+	err := json.NewDecoder(r.Body).Decode(&datacontact)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := UpdatedContact(mconn, collectionname, bson.M{"id": datacontact.ID}, datacontact); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Update Contact", datacontact))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Update Contact", datacontact))
+	}
+}
+
+// get all contact
+func GCFGetAllContact(MONGOCONNSTRINGENV, dbname, collectionname string) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	datacontact := GetAllContact(mconn, collectionname)
+	if datacontact != nil {
+		return GCFReturnStruct(CreateResponse(true, "success Get All Contact", datacontact))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Get All Contact", datacontact))
+	}
+}
+
+// get all contact by id
+func GCFGetAllContactID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var datacontact Contact
+	err := json.NewDecoder(r.Body).Decode(&datacontact)
+	if err != nil {
+		return err.Error()
+	}
+
+	contact := GetIdContact(mconn, collectionname, datacontact)
+	if contact != (Contact{}) {
+		return GCFReturnStruct(CreateResponse(true, "Success: Get ID Contact", datacontact))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Contact", datacontact))
+	}
+}
