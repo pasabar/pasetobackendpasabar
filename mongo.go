@@ -285,3 +285,85 @@ func GCFGetAllTourID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.
 		return GCFReturnStruct(CreateResponse(false, "Failed Get All Tour", tour))
 	}
 }
+
+// <--- ini hotelresto--->
+
+// hotelresto post
+func GCFCreateHotelResto(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var datahotelresto HotelResto
+	err := json.NewDecoder(r.Body).Decode(&datahotelresto)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := CreateHotelResto(mconn, collectionname, datahotelresto); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Create HotelResto", datahotelresto))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Create HotelResto", datahotelresto))
+	}
+}
+
+// delete hotelresto
+func GCFDeleteHotelResto(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var datahotelresto HotelResto
+	err := json.NewDecoder(r.Body).Decode(&datahotelresto)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := DeleteHotelResto(mconn, collectionname, datahotelresto); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Delete HotelResto", datahotelresto))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Delete HotelResto", datahotelresto))
+	}
+}
+
+// update hotelresto
+func GCFUpdateHotelResto(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var datahotelresto HotelResto
+	err := json.NewDecoder(r.Body).Decode(&datahotelresto)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := UpdatedHotelResto(mconn, collectionname, bson.M{"id": datahotelresto.ID}, datahotelresto); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Update HotelResto", datahotelresto))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Update HotelResto", datahotelresto))
+	}
+}
+
+// get all hotelresto
+func GCFGetAllHotelResto(MONGOCONNSTRINGENV, dbname, collectionname string) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	datahotelresto := GetAllHotelResto(mconn, collectionname)
+	if datahotelresto != nil {
+		return GCFReturnStruct(CreateResponse(true, "success Get All HotelResto", datahotelresto))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Get All HotelResto", datahotelresto))
+	}
+}
+
+// get all hotelresto by id
+func GCFGetAllHotelRestoID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var datahotelresto HotelResto
+	err := json.NewDecoder(r.Body).Decode(&datahotelresto)
+	if err != nil {
+		return err.Error()
+	}
+
+	hotelresto := GetAllHotelRestoId(mconn, collectionname, datahotelresto)
+	if hotelresto != nil {
+		return GCFReturnStruct(CreateResponse(true, "success Get All HotelResto", hotelresto))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Get All HotelResto", hotelresto))
+	}
+}
