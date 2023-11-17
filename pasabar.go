@@ -297,3 +297,66 @@ func GCFGetAllCatalogID(MONGOCONNSTRINGENV, dbname, collectionname string, r *ht
 		return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Catalog", datacatalog))
 	}
 }
+
+// <--- ini about --->
+
+// about post
+func GCFCreateAbout(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var dataabout About
+	err := json.NewDecoder(r.Body).Decode(&dataabout)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := CreateAbout(mconn, collectionname, dataabout); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Create About", dataabout))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Create About", dataabout))
+	}
+}
+
+// delete about
+func GCFDeleteAbout(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var dataabout About
+	err := json.NewDecoder(r.Body).Decode(&dataabout)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := DeleteAbout(mconn, collectionname, dataabout); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Delete About", dataabout))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Delete About", dataabout))
+	}
+}
+
+// update about
+func GCFUpdateAbout(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var dataabout About
+	err := json.NewDecoder(r.Body).Decode(&dataabout)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := UpdatedAbout(mconn, collectionname, bson.M{"id": dataabout.ID}, dataabout); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Update About", dataabout))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Update About", dataabout))
+	}
+}
+
+// get all about
+func GCFGetAllAbout(MONGOCONNSTRINGENV, dbname, collectionname string) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	dataabout := GetAllAbout(mconn, collectionname)
+	if dataabout != nil {
+		return GCFReturnStruct(CreateResponse(true, "success Get All About", dataabout))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Get All About", dataabout))
+	}
+}
