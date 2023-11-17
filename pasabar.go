@@ -362,7 +362,7 @@ func GCFGetAllAbout(MONGOCONNSTRINGENV, dbname, collectionname string) string {
 	}
 }
 
-// event global function
+// event tour function
 
 func CreateTour(mongoconn *mongo.Database, collection string, tourdata Tour) interface{} {
 	return atdb.InsertOneDoc(mongoconn, collection, tourdata)
@@ -387,4 +387,31 @@ func GetAllTourId(mongoconn *mongo.Database, collection string, tourdata Tour) [
 	filter := bson.M{"id": tourdata.ID}
 	tour := atdb.GetOneDoc[[]Tour](mongoconn, collection, filter)
 	return tour
+}
+
+// event hotelresto function
+
+func CreateHotelResto(mongoconn *mongo.Database, collection string, hotelrestodata HotelResto) interface{} {
+	return atdb.InsertOneDoc(mongoconn, collection, hotelrestodata)
+}
+
+func DeleteHotelResto(mongoconn *mongo.Database, collection string, hotelrestodata HotelResto) interface{} {
+	filter := bson.M{"id": hotelrestodata.ID}
+	return atdb.DeleteOneDoc(mongoconn, collection, filter)
+}
+
+func UpdatedHotelResto(mongoconn *mongo.Database, collection string, filter bson.M, hotelrestodata HotelResto) interface{} {
+	filter = bson.M{"id": hotelrestodata.ID}
+	return atdb.ReplaceOneDoc(mongoconn, collection, filter, hotelrestodata)
+}
+
+func GetAllHotelResto(mongoconn *mongo.Database, collection string) []HotelResto {
+	hotelresto := atdb.GetAllDoc[[]HotelResto](mongoconn, collection)
+	return hotelresto
+}
+
+func GetAllHotelRestoId(mongoconn *mongo.Database, collection string, hotelrestodata HotelResto) []HotelResto {
+	filter := bson.M{"id": hotelrestodata.ID}
+	hotelresto := atdb.GetOneDoc[[]HotelResto](mongoconn, collection, filter)
+	return hotelresto
 }
