@@ -9,6 +9,7 @@ import (
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GCFFindUserByID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
@@ -359,4 +360,31 @@ func GCFGetAllAbout(MONGOCONNSTRINGENV, dbname, collectionname string) string {
 	} else {
 		return GCFReturnStruct(CreateResponse(false, "Failed Get All About", dataabout))
 	}
+}
+
+// event global function
+
+func CreateTour(mongoconn *mongo.Database, collection string, tourdata Tour) interface{} {
+	return atdb.InsertOneDoc(mongoconn, collection, tourdata)
+}
+
+func DeleteTour(mongoconn *mongo.Database, collection string, tourdata Tour) interface{} {
+	filter := bson.M{"id": tourdata.ID}
+	return atdb.DeleteOneDoc(mongoconn, collection, filter)
+}
+
+func UpdatedTour(mongoconn *mongo.Database, collection string, filter bson.M, tourdata Tour) interface{} {
+	filter = bson.M{"id": tourdata.ID}
+	return atdb.ReplaceOneDoc(mongoconn, collection, filter, tourdata)
+}
+
+func GetAllTour(mongoconn *mongo.Database, collection string) []Tour {
+	tour := atdb.GetAllDoc[[]Tour](mongoconn, collection)
+	return tour
+}
+
+func GetAllTourId(mongoconn *mongo.Database, collection string, tourdata Tour) []Tour {
+	filter := bson.M{"id": tourdata.ID}
+	tour := atdb.GetOneDoc[[]Tour](mongoconn, collection, filter)
+	return tour
 }
