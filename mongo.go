@@ -2,7 +2,9 @@ package pasetobackendpasabar
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/aiteung/atdb"
@@ -200,4 +202,86 @@ func GetAllAbout(mongoconn *mongo.Database, collection string) []About {
 func GetIDAbout(mongoconn *mongo.Database, collection string, aboutdata About) About {
 	filter := bson.M{"id": aboutdata.ID}
 	return atdb.GetOneDoc[About](mongoconn, collection, filter)
+}
+
+// <--- ini tour--->
+
+// tour post
+func GCFCreateTour(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var datatour Tour
+	err := json.NewDecoder(r.Body).Decode(&datatour)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := CreateTour(mconn, collectionname, datatour); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Create Tour", datatour))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Create Tour", datatour))
+	}
+}
+
+// delete tour
+func GCFDeleteTour(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var datatour Tour
+	err := json.NewDecoder(r.Body).Decode(&datatour)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := DeleteTour(mconn, collectionname, datatour); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Delete Tour", datatour))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Delete Tour", datatour))
+	}
+}
+
+// update tour
+func GCFUpdateTour(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var datatour Tour
+	err := json.NewDecoder(r.Body).Decode(&datatour)
+	if err != nil {
+		return err.Error()
+	}
+
+	if err := UpdatedTour(mconn, collectionname, bson.M{"id": datatour.ID}, datatour); err != nil {
+		return GCFReturnStruct(CreateResponse(true, "Success Update Tour", datatour))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Update Tour", datatour))
+	}
+}
+
+// get all tour
+func GCFGetAllTour(MONGOCONNSTRINGENV, dbname, collectionname string) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	datatour := GetAllTour(mconn, collectionname)
+	if datatour != nil {
+		return GCFReturnStruct(CreateResponse(true, "success Get All Tour", datatour))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Get All Tour", datatour))
+	}
+}
+
+// get all tour by id
+func GCFGetAllTourID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	var datatour Tour
+	err := json.NewDecoder(r.Body).Decode(&datatour)
+	if err != nil {
+		return err.Error()
+	}
+
+	tour := GetAllTourId(mconn, collectionname, datatour)
+	if tour != nil {
+		return GCFReturnStruct(CreateResponse(true, "success Get All Tour", tour))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "Failed Get All Tour", tour))
+	}
 }
