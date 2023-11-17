@@ -34,3 +34,11 @@ type Catalog struct {
 	Image       string             `json:"image" bson:"image"`
 	Status      bool               `json:"status" bson:"status"`
 }
+
+type About struct {
+	ID          int    `json:"id" bson:"id"`
+	Title       string `json:"title" bson:"title"`
+	Description string `json:"description" bson:"description"`
+	Image       string `json:"image" bson:"image"`
+	Status      bool   `json:"status" bson:"status"`
+}
