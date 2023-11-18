@@ -1,6 +1,8 @@
 package pasetobackendpasabar
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -24,6 +26,14 @@ type Response struct {
 	Status  bool        `json:"status" bson:"status"`
 	Message string      `json:"message" bson:"message"`
 	Data    interface{} `json:"data" bson:"data"`
+}
+
+type Payload struct {
+	Id   primitive.ObjectID `json:"id"`
+	Role string             `json:"role"`
+	Exp  time.Time          `json:"exp"`
+	Iat  time.Time          `json:"iat"`
+	Nbf  time.Time          `json:"nbf"`
 }
 
 type Catalog struct {
