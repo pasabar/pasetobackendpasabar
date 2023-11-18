@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
+	"aidanwoods.dev/go-paseto"
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -146,11 +149,6 @@ func GCFPostHandler(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionn
 	return GCFReturnStruct(Response)
 }
 
-func GCFReturnStruct(DataStuct any) string {
-	jsondata, _ := json.Marshal(DataStuct)
-	return string(jsondata)
-}
-
 func GCFLoginTest(username, password, MONGOCONNSTRINGENV, dbname, collectionname string) bool {
 	// Membuat koneksi ke MongoDB
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
@@ -217,6 +215,42 @@ func Register(Mongoenv, dbname string, r *http.Request) string {
 	}
 	response := ReturnStringStruct(resp)
 	return response
+}
+
+// encode
+func Encode(id primitive.ObjectID, role, privateKey string) (string, error) {
+	token := paseto.NewToken()
+	token.SetIssuedAt(time.Now())
+	token.SetNotBefore(time.Now())
+	token.SetExpiration(time.Now().Add(2 * time.Hour))
+	token.Set("id", id)
+	token.SetString("role", role)
+	secretKey, err := paseto.NewV4AsymmetricSecretKeyFromHex(privateKey)
+	return token.V4Sign(secretKey, nil), err
+}
+
+func Decode(publicKey string, tokenstring string) (payload Payload, err error) {
+	var token *paseto.Token
+	var pubKey paseto.V4AsymmetricPublicKey
+	pubKey, err = paseto.NewV4AsymmetricPublicKeyFromHex(publicKey) // this wil fail if given key in an invalid format
+	if err != nil {
+		fmt.Println("Decode NewV4AsymmetricPublicKeyFromHex : ", err)
+	}
+	parser := paseto.NewParser()                                // only used because this example token has expired, use NewParser() (which checks expiry by default)
+	token, err = parser.ParseV4Public(pubKey, tokenstring, nil) // this will fail if parsing failes, cryptographic checks fail, or validation rules fail
+	if err != nil {
+		fmt.Println("Decode ParseV4Public : ", err)
+	} else {
+		json.Unmarshal(token.ClaimsJSON(), &payload)
+	}
+	return payload, err
+}
+
+func GenerateKey() (privateKey, publicKey string) {
+	secretKey := paseto.NewV4AsymmetricSecretKey() // don't share this!!!
+	publicKey = secretKey.Public().ExportHex()     // DO share this one
+	privateKey = secretKey.ExportHex()
+	return privateKey, publicKey
 }
 
 // <--- ini catalog --->
