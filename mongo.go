@@ -11,7 +11,17 @@ import (
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+// mongo
+func MongoConnect(MongoString, dbname string) *mongo.Database {
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(os.Getenv(MongoString)))
+	if err != nil {
+		fmt.Printf("MongoConnect: %v\n", err)
+	}
+	return client.Database(dbname)
+}
 
 func GetConnectionMongo(MongoString, dbname string) *mongo.Database {
 	MongoInfo := atdb.DBInfo{
@@ -30,6 +40,7 @@ func SetConnection(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
 	return atdb.MongoConnect(DBmongoinfo)
 }
 
+// crud paseto
 func CreateUser(mongoconn *mongo.Database, collection string, userdata User) interface{} {
 	// Hash the password before storing it
 	hashedPassword, err := HashPassword(userdata.Password)
@@ -141,6 +152,29 @@ func InsertUser(db *mongo.Database, collection string, userdata User) string {
 	atdb.InsertOneDoc(db, collection, userdata)
 	return "Username : " + userdata.Username + "\nPassword : " + userdata.Password
 }
+
+// get user login
+func GetUserLogin(PASETOPUBLICKEYENV string, r *http.Request) (Payload, error) {
+	tokenstring := r.Header.Get("Authorization")
+	payload, err := Decode(os.Getenv(PASETOPUBLICKEYENV), tokenstring)
+	if err != nil {
+		return payload, err
+	}
+	return payload, nil
+}
+
+// get id
+func GetID(r *http.Request) string {
+	return r.URL.Query().Get("id")
+}
+
+// return struct
+func GCFReturnStruct(DataStuct any) string {
+	jsondata, _ := json.Marshal(DataStuct)
+	return string(jsondata)
+}
+
+// <--- tutup --->
 
 // catalog
 func CreateNewCatalog(mongoconn *mongo.Database, collection string, catalogdata Catalog) interface{} {
